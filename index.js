@@ -1,6 +1,8 @@
 const { Telegraf } = require('telegraf');
 const axios = require('axios');
 const express = require('express');
+const NOTIFICATION_CHAT_ID = "-1002380891024";
+
 
 if (!process.env.TOKEN) throw new Error('TOKEN не установлен!');
 if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY не установлен!');
@@ -194,6 +196,21 @@ const isPrivateChat = (ctx) => ctx.chat?.type === 'private';
 
 function handlePrivateChat(ctx) {
   if (isPrivateChat(ctx)) {
+
+console.log(`👀 Личное сообщение от: 
+      ID: ${ctx.from.id}
+      Имя: ${ctx.from.first_name} ${ctx.from.last_name || ''}
+      Username: @${ctx.from.username || 'нет'}
+      Текст: ${ctx.message.text}`);
+
+    ctx.telegram.sendMessage(
+      NOTIFICATION_CHAT_ID, // Замените на ваш ID!
+      `🔔 Новый контакт!\nИмя: ${ctx.from.first_name}\nUsername: @${ctx.from.username}\nID: ${ctx.from.id}\nСообщение: ${ctx.message.text}`
+    )
+    .catch((err) => {
+      console.error("❌ Ошибка отправки:", err.message);
+    });
+
     ctx.reply(settings.privateChatResponse);
     return true;
   }
@@ -266,7 +283,7 @@ bot.command('dablaetonensecret', async (ctx) => {
 
   if (!isPrivateChat(ctx)) return;
 
-  const match = ctx.message.text.match(/\/dablaetonensecret\s+(.+)/i);
+  const match = ctx.message.text.match(/\/etonensecret\s+([\s\S]*)/i);
   if (!match) return ctx.reply("Формат: /dablaetonensecret [ваша фраза]");
 
   try {
